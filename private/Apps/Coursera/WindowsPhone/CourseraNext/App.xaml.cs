@@ -50,12 +50,12 @@ namespace CourseraNext
 
             continuationManager = new ContinuationManager();
 
-            Frame rootFrame = CreateRootFrame();
+            //Frame rootFrame = CreateRootFrame();
 
-            if (rootFrame.Content == null)
-            {
-                rootFrame.Navigate(typeof(MainPage));
-            }
+            //if (rootFrame.Content == null)
+            //{
+            //    rootFrame.Navigate(typeof(MainPage));
+            //}
 
             var continuationEventArgs = args as IContinuationActivatedEventArgs;
             if (continuationEventArgs != null)
@@ -64,7 +64,7 @@ namespace CourseraNext
                continuationManager.Continue(continuationEventArgs);
             }
 
-            Window.Current.Activate();
+            //Window.Current.Activate();
         }
 
         private async Task RestoreStatusAsync(ApplicationExecutionState previousExecutionState)
@@ -84,28 +84,6 @@ namespace CourseraNext
                     //Assume there is no state and continue 
                 }
             }
-        }
-
-        private Frame CreateRootFrame()
-        {
-            Frame rootFrame = Window.Current.Content as Frame;
-
-            // Do not repeat app initialization when the Window already has content, 
-            // just ensure that the window is active 
-            if (rootFrame == null)
-            {
-                // Create a Frame to act as the navigation context and navigate to the first page 
-                rootFrame = new Frame();
-
-                // Set the default language 
-                rootFrame.Language = Windows.Globalization.ApplicationLanguages.Languages[0];
-                rootFrame.NavigationFailed += OnNavigationFailed;
-
-                // Place the frame in the current Window 
-                Window.Current.Content = rootFrame;
-            }
-
-            return rootFrame;
         }
 
         /// <summary> 

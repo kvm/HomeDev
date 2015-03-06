@@ -15,6 +15,12 @@ using Windows.UI.Xaml.Navigation;
 using Windows.Security.Authentication.Web;
 using CourseraNext.Managers;
 using Windows.ApplicationModel.Activation;
+using System.Threading.Tasks;
+using System.Net;
+using System.Net.Http;
+using Newtonsoft;
+using Newtonsoft.Json;
+using CourseraNext.Models;
 
 // The Blank Page item template is documented at http://go.microsoft.com/fwlink/?LinkId=391641
 
@@ -37,22 +43,105 @@ namespace CourseraNext
 
         }
 
-        public void ContinueWebAuthentication(WebAuthenticationBrokerContinuationEventArgs args)
+        public async void ContinueWebAuthentication(WebAuthenticationBrokerContinuationEventArgs args)
         {
             WebAuthenticationResult result = args.WebAuthenticationResult;
 
-
             if (result.ResponseStatus == WebAuthenticationStatus.Success)
             {
+                // fetch code from url
+                string authCode = GetErrorCodeFromString(result.ResponseData);
+
+                if (authCode != null)
+                {
+                    var accessToken = await GetAccessTokenFromCode(authCode);
+
+                    string profileInfo = await GetRequest("https://api.coursera.org/api/externalBasicProfiles.v1?q=me&fields=name,profilephoto,timezone,locale,privacy", accessToken);
+
+                    string enrollments = await GetRequest("https://api.coursera.org/api/users/v1/me/enrollments", accessToken);
+
+                    var objectTuple = GetObjectsFomJson(enrollments, profileInfo);
+                }
+                else
+                {
+                    // todo throw error
+                }
             }
             else if (result.ResponseStatus == WebAuthenticationStatus.ErrorHttp)
             {
+
             }
             else
             {
+
             }
         }
 
+        public Tuple<ProfileInfo, List<Course>, List<Enrollment>>GetObjectsFomJson(string enrollmentsJson, string profileJson)
+        {
+            ProfileInfo profileInfo = new ProfileInfo();
+            List<Enrollment> enrollments = new List<Enrollment>();
+            List<Course> courses = new List<Course>();
+
+            var dict = JsonConvert.DeserializeObject<Dictionary<string, object>>(enrollmentsJson);
+
+            enrollments = JsonConvert.DeserializeObject<List<Enrollment>>(JsonConvert.SerializeObject(dict["enrollments"]));
+
+            courses = JsonConvert.DeserializeObject<List<Course>>(JsonConvert.SerializeObject(dict["courses"]));
+
+            dict = JsonConvert.DeserializeObject<Dictionary<string, object>>(profileJson);
+
+            profileInfo = JsonConvert.DeserializeObject<List<ProfileInfo>>(JsonConvert.SerializeObject(dict["elements"]))[0];
+
+            return new Tuple<ProfileInfo, List<Course>, List<Enrollment>>(profileInfo, courses, enrollments);
+        }
+      
+
+        private string GetErrorCodeFromString(string redirectUrl)
+        {
+            string[] tokens = redirectUrl.Split(new char[] { '&' });
+
+            foreach (var token in tokens)
+            {
+                if (token.Contains("code="))
+                {
+                    return token.Replace("code=", string.Empty);
+                }
+            }
+
+            return null;
+        }
+
+        private async Task<string> GetAccessTokenFromCode(string code)
+        {
+            List<KeyValuePair<string, string>> values = new List<KeyValuePair<string, string>>();
+            values.Add(new KeyValuePair<string, string>("code", code));
+            values.Add(new KeyValuePair<string, string>("client_secret", Constants.App.ClientSecret));
+            values.Add(new KeyValuePair<string, string>("client_id", Constants.App.ClientId));
+            values.Add(new KeyValuePair<string, string>("grant_type", "authorization_code"));
+            values.Add(new KeyValuePair<string, string>("redirect_uri", Constants.App.RedirectUri));
+
+            var httpClient = new HttpClient();
+            var response = await httpClient.PostAsync("https://accounts.coursera.org/oauth2/v1/token", new FormUrlEncodedContent(values));
+            var responseString = await response.Content.ReadAsStringAsync();
+
+            var responseDict = Newtonsoft.Json.JsonConvert.DeserializeObject<Dictionary<string, string>>(responseString);
+
+            if (responseDict.ContainsKey("access_token"))
+            {
+                return responseDict["access_token"];
+            }
+
+            return null;
+        }
+
+        private async Task<string> GetRequest(string url, string accessToken)
+        {
+            HttpClient client = new HttpClient();
+            client.DefaultRequestHeaders.Add("Authorization", "Bearer " + accessToken);
+            var response = await client.GetStringAsync(new Uri(url));
+            return response;
+        }
 
         /// <summary>
         /// Invoked when this page is about to be displayed in a Frame.
