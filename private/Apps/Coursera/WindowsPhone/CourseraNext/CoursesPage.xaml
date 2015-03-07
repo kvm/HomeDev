@@ -24,30 +24,11 @@
         <!-- Title Panel -->
         <StackPanel Grid.Row="0" Margin="19,0,0,0">
             <TextBlock Text="MY APPLICATION" Style="{ThemeResource TitleTextBlockStyle}" Margin="0,12,0,0"/>
-            <TextBlock Text="page title" Margin="0,-6.5,0,26.5" Style="{ThemeResource HeaderTextBlockStyle}" CharacterSpacing="{ThemeResource PivotHeaderItemCharacterSpacing}"/>
         </StackPanel>
 
         <!--TODO: Content should be placed within the following grid-->
-        <Grid Grid.Row="1" x:Name="ContentRoot" Margin="19,9.5,19,0">
-            <ListBox ItemsSource="{Binding}"  Margin="10,0,30,0" Height="486" Width="404" FontSize="20">
-                <ListBox.ItemTemplate>
-                    <DataTemplate >
-                        <Grid Tapped="Grid_Tapped">
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="1*"></ColumnDefinition>
-                                <ColumnDefinition Width="3*"></ColumnDefinition>
-                            </Grid.ColumnDefinitions>
-                            <Image x:Name="DefaultImage" Grid.Column="0" Source="Assets\Icon\default_course.jpg"></Image>
-                            <!--<Image Source="{Binding photo}" Grid.Column="0"></Image>-->
-                            <StackPanel Margin="10,0,10,8" Grid.Column="1">
-                                <TextBlock Text="{Binding name }" TextWrapping="Wrap" FontSize="18" />
-                                <TextBlock Text="{Binding shortName }" TextWrapping="Wrap" FontSize="24" />
-                                <TextBlock x:Name="CourseLink" Text="{Binding photo}" Visibility="Collapsed"></TextBlock>
-                            </StackPanel>
-                        </Grid>
-                    </DataTemplate>
-                </ListBox.ItemTemplate>
-            </ListBox>
+        <Grid Grid.Row="1" x:Name="ContentRoot" Margin="5,5,5,0">
+            <WebView x:Name="webView" Source="https://www.google.com"></WebView>
         </Grid>
     </Grid>
 </Page>

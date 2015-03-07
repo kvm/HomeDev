@@ -86,7 +86,9 @@
     <Compile Include="Common\ObservableDictionary.cs" />
     <Compile Include="Common\RelayCommand.cs" />
     <Compile Include="Common\SuspensionManager.cs" />
+    <Compile Include="Constants\Api.cs" />
     <Compile Include="Constants\App.cs" />
+    <Compile Include="Converters\StringTruncateConverter.cs" />
     <Compile Include="CoursesPage.xaml.cs">
       <DependentUpon>CoursesPage.xaml</DependentUpon>
     </Compile>
@@ -99,6 +101,7 @@
     <Compile Include="Models\Course.cs" />
     <Compile Include="Models\Enrollment.cs" />
     <Compile Include="Models\ProfileInfo.cs" />
+    <Compile Include="Models\Session.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="ViewModels\CoursesPageViewModel.cs" />
   </ItemGroup>
@@ -138,6 +141,7 @@
   <ItemGroup>
     <None Include="packages.config" />
   </ItemGroup>
+  <ItemGroup />
   <PropertyGroup Condition=" '$(VisualStudioVersion)' == '' or '$(VisualStudioVersion)' &lt; '12.0' ">
     <VisualStudioVersion>12.0</VisualStudioVersion>
   </PropertyGroup>

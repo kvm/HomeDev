@@ -35,8 +35,6 @@ namespace CourseraNext
             this.navigationHelper = new NavigationHelper(this);
             this.navigationHelper.LoadState += this.NavigationHelper_LoadState;
             this.navigationHelper.SaveState += this.NavigationHelper_SaveState;
-
-            this.DataContext = new CollectionViewSource { Source = DummyDataSource.GetCoursesDummyData().courses };
         }
 
         /// <summary>
@@ -101,6 +99,10 @@ namespace CourseraNext
         protected override void OnNavigatedTo(NavigationEventArgs e)
         {
             this.navigationHelper.OnNavigatedTo(e);
+
+            string courseLink = e.Parameter as string;
+
+            webView.Source = new Uri(courseLink);
         }
 
         protected override void OnNavigatedFrom(NavigationEventArgs e)
@@ -110,21 +112,5 @@ namespace CourseraNext
 
         #endregion
 
-        private async void Grid_Tapped(object sender, TappedRoutedEventArgs e)
-        {
-            Grid grid = sender as Grid;
-
-            var children = grid.Children;
-
-            var stackPanel = children[1] as StackPanel;
-
-            var courseTextBlock = stackPanel.Children[2] as TextBlock;
-
-            var courseLink = courseTextBlock.Text;
-
-            var uri = new Uri(courseLink);
-
-            var success = await Windows.System.Launcher.LaunchUriAsync(uri);
-        }
     }
 }

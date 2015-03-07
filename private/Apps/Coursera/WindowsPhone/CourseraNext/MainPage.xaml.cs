@@ -216,7 +216,11 @@ namespace CourseraNext
 
             var objectTuple = GetObjectsFomJson(enrollments, profileInfo);
 
-            this.DataContext = new CollectionViewSource { Source = objectTuple.Item2 };
+            var courseids = objectTuple.Item2.Select(element => element.id.ToString()).ToList();
+
+            var courses = await GetCourseDetailsFromCatalogApi(courseids);
+
+            this.DataContext = new CollectionViewSource { Source = courses };
         }
 
         private async void Grid_Tapped(object sender, TappedRoutedEventArgs e)
@@ -231,9 +235,11 @@ namespace CourseraNext
 
             var courseLink = courseTextBlock.Text;
 
-            var uri = new Uri(courseLink);
+            //var uri = new Uri(courseLink);
 
-            var success = await Windows.System.Launcher.LaunchUriAsync(uri);
+            //var success = await Windows.System.Launcher.LaunchUriAsync(uri);
+
+            Frame.Navigate(typeof(CoursesPage), courseLink);
         }
 
         private void CourseImage_ImageOpened(object sender, RoutedEventArgs e)
@@ -247,6 +253,49 @@ namespace CourseraNext
             defaultImage.Visibility = Visibility.Collapsed;
 
             courseImage.Visibility = Visibility.Visible;
+        }
+
+        private async Task<List<Course>> GetCourseDetailsFromCatalogApi(List<string> courseIds)
+        {
+            string coursesJoinedString = string.Join(",", courseIds);
+
+            string requestUrl = string.Format(Constants.Api.CourseCatalogUrl, coursesJoinedString);
+
+            string coursesJson = await GetRequest(requestUrl, "");
+
+            dynamic obj = JsonConvert.DeserializeObject(coursesJson);
+
+            var sessions = obj["linked"]["sessions"];
+
+            var courseJsonArray = obj["elements"];
+
+            List<Course> courses = new List<Course>();
+
+            foreach (var course in courseJsonArray)
+            {
+                var courseJson = JsonConvert.SerializeObject(course);
+                Course courseObject = JsonConvert.DeserializeObject<Course>(courseJson);
+
+                var sessionIds = obj["elements"][0]["links"]["sessions"];
+                courseObject.sessionIds = JsonConvert.DeserializeObject<List<string>>(JsonConvert.SerializeObject(sessionIds));
+
+                var sessionId = courseObject.sessionIds.Last();
+
+                var sessionHomeLink = "";
+                foreach (dynamic session in sessions)
+                {
+                    if (JsonConvert.SerializeObject(session["id"]) == sessionId)
+                    {
+                        sessionHomeLink = JsonConvert.SerializeObject(session["homeLink"]);
+                    }
+                }
+
+                courseObject.courseHomeLink = JsonConvert.DeserializeObject<string>(sessionHomeLink);
+
+                courses.Add(courseObject);
+            }        
+
+            return courses;
         }
     }
 }
