@@ -32,10 +32,19 @@
             <ListBox ItemsSource="{Binding}"  Margin="10,0,30,0" Height="486" Width="404" FontSize="20">
                 <ListBox.ItemTemplate>
                     <DataTemplate >
-                        <StackPanel Margin="10,0,10,8">
-                            <TextBlock Text="{Binding name }" TextWrapping="Wrap" FontSize="18" />
-                            <TextBlock Text="{Binding shortName }" TextWrapping="Wrap" FontSize="24" />
-                        </StackPanel>
+                        <Grid Tapped="Grid_Tapped">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="1*"></ColumnDefinition>
+                                <ColumnDefinition Width="3*"></ColumnDefinition>
+                            </Grid.ColumnDefinitions>
+                            <Image x:Name="DefaultImage" Grid.Column="0" Source="Assets\Icon\default_course.jpg"></Image>
+                            <!--<Image Source="{Binding photo}" Grid.Column="0"></Image>-->
+                            <StackPanel Margin="10,0,10,8" Grid.Column="1">
+                                <TextBlock Text="{Binding name }" TextWrapping="Wrap" FontSize="18" />
+                                <TextBlock Text="{Binding shortName }" TextWrapping="Wrap" FontSize="24" />
+                                <TextBlock x:Name="CourseLink" Text="{Binding photo}" Visibility="Collapsed"></TextBlock>
+                            </StackPanel>
+                        </Grid>
                     </DataTemplate>
                 </ListBox.ItemTemplate>
             </ListBox>

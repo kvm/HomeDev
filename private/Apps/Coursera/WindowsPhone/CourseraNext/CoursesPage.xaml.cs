@@ -109,5 +109,22 @@ namespace CourseraNext
         }
 
         #endregion
+
+        private async void Grid_Tapped(object sender, TappedRoutedEventArgs e)
+        {
+            Grid grid = sender as Grid;
+
+            var children = grid.Children;
+
+            var stackPanel = children[1] as StackPanel;
+
+            var courseTextBlock = stackPanel.Children[2] as TextBlock;
+
+            var courseLink = courseTextBlock.Text;
+
+            var uri = new Uri(courseLink);
+
+            var success = await Windows.System.Launcher.LaunchUriAsync(uri);
+        }
     }
 }

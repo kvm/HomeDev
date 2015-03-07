@@ -9,7 +9,30 @@
     Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
 
     <Grid>
-        <Frame x:Name="ScenarioFrame" Grid.Row="0" Margin="0,25,0,0"/>  
-        <Button x:Name="button" Content="Button" HorizontalAlignment="Left" Margin="262,143,0,0" VerticalAlignment="Top" Click="button_Click"/>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="1*"></RowDefinition>
+            <RowDefinition Height="10*"></RowDefinition>
+        </Grid.RowDefinitions>
+        <Grid Background="Beige" Grid.Row="1" x:Name="ContentRoot" Margin="5,2,5,0">
+            <ListBox ItemsSource="{Binding}"  Margin="0,0,0,0" Height="auto" Width="auto" FontSize="20">
+                <ListBox.ItemTemplate>
+                    <DataTemplate >
+                        <Grid x:Name="DeaultCourseImage" Tapped="Grid_Tapped">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="1*"></ColumnDefinition>
+                                <ColumnDefinition Width="3*"></ColumnDefinition>
+                            </Grid.ColumnDefinitions>
+                            <Image x:Name="DefaultCourseImage" Source="/Assets/Icons/default_course.jpg" Grid.Column="0"></Image>
+                            <Image x:Name="CourseImage" Source="{Binding photo}" Grid.Column="0" Visibility="Collapsed" ImageOpened="CourseImage_ImageOpened"></Image>
+                            <StackPanel Margin="10,0,10,8" Grid.Column="1">
+                                <TextBlock x:Name="CourseName" Text="{Binding name }" TextWrapping="Wrap" FontSize="18" />
+                                <TextBlock x:Name="CourseDescription" Text="{Binding shortName }" TextWrapping="Wrap" FontSize="24" />
+                                <TextBlock x:Name="CourseLink" Text="{Binding photo}" Visibility="Collapsed"></TextBlock>
+                            </StackPanel>
+                        </Grid>
+                    </DataTemplate>
+                </ListBox.ItemTemplate>
+            </ListBox>
+        </Grid>
     </Grid>
 </Page>

@@ -33,6 +33,10 @@ namespace CourseraNext
     {
         public static MainPage Current;
 
+        private Windows.Storage.ApplicationDataContainer roamingSettings;
+
+        private DispatcherTimer timer = new DispatcherTimer();
+
         public MainPage()
         {
             this.InitializeComponent();
@@ -41,6 +45,22 @@ namespace CourseraNext
 
             this.NavigationCacheMode = NavigationCacheMode.Required;
 
+            this.roamingSettings = Windows.Storage.ApplicationData.Current.RoamingSettings;
+
+            Loaded += MainPage_Loaded;
+        }
+
+        private void MainPage_Loaded(object sender, RoutedEventArgs e)
+        {
+            timer.Interval = new TimeSpan(0, 0, 0);
+            timer.Tick += timer_Tick;
+            timer.Start();
+        }
+
+        void timer_Tick(object sender, object e)
+        {
+            timer.Stop();
+            CourseraInit();
         }
 
         public async void ContinueWebAuthentication(WebAuthenticationBrokerContinuationEventArgs args)
@@ -56,11 +76,9 @@ namespace CourseraNext
                 {
                     var accessToken = await GetAccessTokenFromCode(authCode);
 
-                    string profileInfo = await GetRequest("https://api.coursera.org/api/externalBasicProfiles.v1?q=me&fields=name,profilephoto,timezone,locale,privacy", accessToken);
+                    roamingSettings.Values[Constants.App.AccessTokenKey] = accessToken;
 
-                    string enrollments = await GetRequest("https://api.coursera.org/api/users/v1/me/enrollments", accessToken);
-
-                    var objectTuple = GetObjectsFomJson(enrollments, profileInfo);
+                    await ObtainUserDataFromCourseraAndUpdateUI(accessToken);
                 }
                 else
                 {
@@ -77,7 +95,7 @@ namespace CourseraNext
             }
         }
 
-        public Tuple<ProfileInfo, List<Course>, List<Enrollment>>GetObjectsFomJson(string enrollmentsJson, string profileJson)
+        public Tuple<ProfileInfo, List<Course>, List<Enrollment>> GetObjectsFomJson(string enrollmentsJson, string profileJson)
         {
             ProfileInfo profileInfo = new ProfileInfo();
             List<Enrollment> enrollments = new List<Enrollment>();
@@ -95,7 +113,7 @@ namespace CourseraNext
 
             return new Tuple<ProfileInfo, List<Course>, List<Enrollment>>(profileInfo, courses, enrollments);
         }
-      
+
 
         private string GetErrorCodeFromString(string redirectUrl)
         {
@@ -159,12 +177,76 @@ namespace CourseraNext
             // this event is handled for you.
         }
 
-        private void button_Click(object sender, RoutedEventArgs e)
+        public async Task CourseraInit()
         {
-            System.Uri StartUri = new Uri(String.Format("https://accounts.coursera.org/oauth2/v1/auth?response_type=code&client_id={0}&redirect_uri={1}&scope=view_profile&state={2}", "f91_rV2IsShrPS5fs9BVGw", System.Uri.EscapeUriString("https://www.facebook.com/pages/Pheonix-Labs/1444648675826026?"), "csrf_code1234"));
-            System.Uri EndUri = new Uri("https://www.facebook.com/pages/Pheonix-Labs/1444648675826026?");
+            // check if access token is already present
+            if (!roamingSettings.Values.ContainsKey(Constants.App.AccessTokenKey))
+            {
+                InitiateUserLoginAndObtainAccessToken();
+                return;
+            }
+
+            // if aceess token is already present check if it is valid
+            try
+            {
+                string accessToken = roamingSettings.Values[Constants.App.AccessTokenKey].ToString();
+
+                await ObtainUserDataFromCourseraAndUpdateUI(accessToken);
+            }
+            catch (Exception)
+            {
+                // if there is an exception then the access token is not valid
+                InitiateUserLoginAndObtainAccessToken();
+            }
+        }
+
+        public void InitiateUserLoginAndObtainAccessToken()
+        {
+            Uri StartUri = new Uri(String.Format("https://accounts.coursera.org/oauth2/v1/auth?response_type=code&client_id={0}&redirect_uri={1}&scope=view_profile&state={2}", "f91_rV2IsShrPS5fs9BVGw", System.Uri.EscapeUriString("https://www.facebook.com/pages/Pheonix-Labs/1444648675826026?"), "csrf_code1234"));
+            Uri EndUri = new Uri("https://www.facebook.com/pages/Pheonix-Labs/1444648675826026?");
 
             WebAuthenticationBroker.AuthenticateAndContinue(StartUri, EndUri, null, WebAuthenticationOptions.None);
+        }
+
+        public async Task ObtainUserDataFromCourseraAndUpdateUI(string accessToken)
+        {
+            string profileInfo = await GetRequest("https://api.coursera.org/api/externalBasicProfiles.v1?q=me&fields=name,profilephoto,timezone,locale,privacy", accessToken);
+
+            string enrollments = await GetRequest("https://api.coursera.org/api/users/v1/me/enrollments", accessToken);
+
+            var objectTuple = GetObjectsFomJson(enrollments, profileInfo);
+
+            this.DataContext = new CollectionViewSource { Source = objectTuple.Item2 };
+        }
+
+        private async void Grid_Tapped(object sender, TappedRoutedEventArgs e)
+        {
+            Grid grid = sender as Grid;
+
+            var children = grid.Children;
+
+            var stackPanel = children[2] as StackPanel;
+
+            var courseTextBlock = stackPanel.Children[2] as TextBlock;
+
+            var courseLink = courseTextBlock.Text;
+
+            var uri = new Uri(courseLink);
+
+            var success = await Windows.System.Launcher.LaunchUriAsync(uri);
+        }
+
+        private void CourseImage_ImageOpened(object sender, RoutedEventArgs e)
+        {
+            var courseImage = sender as Image;
+
+            var parentGrid = courseImage.Parent as Grid;
+
+            var defaultImage = parentGrid.Children[0] as Image;
+
+            defaultImage.Visibility = Visibility.Collapsed;
+
+            courseImage.Visibility = Visibility.Visible;
         }
     }
 }

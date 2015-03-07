@@ -13,5 +13,9 @@ namespace CourseraNext.Constants
         public const string ClientSecret = "EHihvSNaUP7379tkiJIBOw";
 
         public const string RedirectUri = "https://www.facebook.com/pages/Pheonix-Labs/1444648675826026?";
+
+        public const string AuthCode = "Code";
+
+        public const string AccessTokenKey = "AccessToken";
     }
 }
