@@ -2,13 +2,48 @@
     x:Class="Flashlight.MainPage"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-    xmlns:local="using:Flashlight"
+    xmlns:local="using:Flashlight.UserControls"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     mc:Ignorable="d"
     Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
 
     <Grid>
-        <Image x:Name="PowerImageButton" Source="/Assets/Icons/power_off3.png" Stretch="Fill" HorizontalAlignment="Center" Height="300" Margin="0,10,0,0" VerticalAlignment="Top" Width="300" Tapped="PowerImageButton_Tapped"/>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="1*"></RowDefinition>
+            <RowDefinition Height="1*"></RowDefinition>
+        </Grid.RowDefinitions>
+        <Image Grid.Row="0"  x:Name="PowerImageButton" Source="/Assets/Icons/power_off3.png" Stretch="Fill" HorizontalAlignment="Center" Height="300" Margin="0,10,0,0" VerticalAlignment="Top" Width="300" Tapped="PowerImageButton_Tapped"/>
+        <Grid Grid.Row="1" Height="auto">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="1*"></RowDefinition>
+                <RowDefinition Height="1*"></RowDefinition>
+            </Grid.RowDefinitions>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="1*"></ColumnDefinition>
+                <ColumnDefinition Width="1*"></ColumnDefinition>
+            </Grid.ColumnDefinitions>
+
+            <Grid Grid.Row="0" Grid.Column="0" Background="DarkOrchid">
+                <Slider Width="160" Height="60" VerticalAlignment="Center" HorizontalAlignment="Center" Value="8"></Slider>
+            </Grid>
+            
+            <!--<Image x:Name="SosImageButton" Grid.Row="0" Grid.Column="0" Source="/Assets/Icons/sos.png" Tapped="SosImageButton_Tapped" Opacity="0.3" ></Image>-->
+            <Grid Grid.Row="0" Grid.Column="1" Background="DarkBlue">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="1*"></RowDefinition>
+                    <RowDefinition Height="2*"></RowDefinition>
+                    <RowDefinition Height="1*"></RowDefinition>
+                </Grid.RowDefinitions>
+                
+                <TextBlock Grid.Row="0" Text="Battery Status" Foreground="White" FontSize="20" Margin="7,7"></TextBlock>
+                <TextBlock x:Name="BatteryPercentageText" Grid.Row="1" Foreground="White" Text="70%" FontSize="56" Margin="7,7" FontWeight="Bold"></TextBlock>
+                <TextBlock x:Name="BatteryTimeText" Grid.Row="2" Foreground="White" Text="2Hrs 22Min left" FontSize="20" Margin="7,7"></TextBlock>
+            </Grid>
+
+            <Grid Grid.Row="1" Grid.Column="0" Background="Brown"></Grid>
+            
+            <Grid Grid.Row="1" Grid.Column="1" Background="LimeGreen"></Grid>
+        </Grid>
     </Grid>
 </Page>

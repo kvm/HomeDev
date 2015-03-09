@@ -19,6 +19,7 @@ using System.Threading.Tasks;
 using Windows.Devices.Enumeration;
 using Windows.UI.Popups;
 using Windows.UI.Xaml.Media.Imaging;
+using Windows.Phone.Devices.Power; 
 
 // The Blank Page item template is documented at http://go.microsoft.com/fwlink/?LinkId=391641
 
@@ -39,13 +40,17 @@ namespace Flashlight
             {
                 //var dialog = new MessageDialog("Constructor called");
                 //dialog.ShowAsync();
-
+                var battery = Battery.GetDefault();
                 this.InitializeComponent();
 
                 this.NavigationCacheMode = NavigationCacheMode.Required;
 
                 Application.Current.Resuming += Current_Resuming;
                 //this.Loaded += MainPage_Loaded;
+
+                battery.RemainingChargePercentChanged += Battery_RemainingChargePercentChanged;
+
+                UpdateBatteryWdiget();
             }
             catch(Exception)
             {
@@ -53,9 +58,15 @@ namespace Flashlight
             }
         }
 
+        private void Battery_RemainingChargePercentChanged(object sender, object e)
+        {
+            UpdateBatteryWdiget();
+        }
+
         private void Current_Resuming(object sender, object e)
         {
             TurnOffPowerButtonImage();
+            UpdateBatteryWdiget();
         }
 
         protected override void OnLostFocus(RoutedEventArgs e)
@@ -178,6 +189,26 @@ namespace Flashlight
         private void TurnOffPowerButtonImage()
         {
             PowerImageButton.Source = new BitmapImage(new Uri(@"ms-appx:/Assets/Icons/power_off3.png", UriKind.Absolute));
+        }
+
+        //private async void SosImageButton_Tapped(object sender, TappedRoutedEventArgs e)
+        //{
+        //    if (isCaptureMgrDisposed)
+        //    {
+        //        await Flashlight.App.InitialiseMediaCapture();
+        //        isCaptureMgrDisposed = false;
+        //    }
+
+        //    SosImageButton.Opacity = 1.0;
+        //}
+
+        private void UpdateBatteryWdiget()
+        {
+            var battery = Battery.GetDefault();
+
+            BatteryPercentageText.Text = string.Format("{0}%", battery.RemainingChargePercent.ToString());
+
+            BatteryTimeText.Text = string.Format("{0]hrs {1}mins", battery.RemainingDischargeTime.TotalHours == 0.0 ? string.Empty : battery.RemainingDischargeTime.Hours.ToString(), battery.RemainingDischargeTime.Minutes.ToString());
         }
     }
 }

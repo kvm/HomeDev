@@ -90,6 +90,9 @@
     </Compile>
     <Compile Include="Managers\ExceptionHandler.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="UserControls\BatteryWidget.xaml.cs">
+      <DependentUpon>BatteryWidget.xaml</DependentUpon>
+    </Compile>
   </ItemGroup>
   <ItemGroup>
     <AppxManifest Include="Package.appxmanifest">
@@ -103,6 +106,7 @@
     <Content Include="Assets\Icons\power_on.png" />
     <Content Include="Assets\Icons\power_on1.jpg" />
     <Content Include="Assets\Icons\power_on3.png" />
+    <Content Include="Assets\Icons\sos.png" />
     <Content Include="Assets\Logo.scale-240.png" />
     <Content Include="Assets\SmallLogo.scale-240.png" />
     <Content Include="Assets\SplashScreen.scale-240.png" />
@@ -119,6 +123,10 @@
     <Page Include="MainPage.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
+    </Page>
+    <Page Include="UserControls\BatteryWidget.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
     </Page>
   </ItemGroup>
   <PropertyGroup Condition=" '$(VisualStudioVersion)' == '' or '$(VisualStudioVersion)' &lt; '12.0' ">
