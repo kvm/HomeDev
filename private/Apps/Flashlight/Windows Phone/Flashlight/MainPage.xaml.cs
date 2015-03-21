@@ -19,7 +19,9 @@ using System.Threading.Tasks;
 using Windows.Devices.Enumeration;
 using Windows.UI.Popups;
 using Windows.UI.Xaml.Media.Imaging;
-using Windows.Phone.Devices.Power; 
+using Windows.Phone.Devices.Power;
+using Windows.Media.MediaProperties;
+using Windows.Storage;
 
 // The Blank Page item template is documented at http://go.microsoft.com/fwlink/?LinkId=391641
 
@@ -33,6 +35,8 @@ namespace Flashlight
         public static MediaCapture captureManager;
 
         public static bool isCaptureMgrDisposed;
+
+        public static float userTorchPercent;
 
         public MainPage()
         {
@@ -176,6 +180,15 @@ namespace Flashlight
                 else
                 {
                     TurnOnPowerButtonImage();
+
+                    //var videoEncodingProperties = MediaEncodingProfile.CreateMp4(VideoEncodingQuality.Vga);
+
+                    //// Start Video Recording
+                    //var videoStorageFile = await KnownFolders.VideosLibrary.CreateFileAsync("tempVideo.mp4", CreationCollisionOption.GenerateUniqueName);
+                    //await captureManager.StartRecordToStorageFileAsync(videoEncodingProperties, videoStorageFile);
+                    
+
+                    torch.PowerPercent = 80.0f;
                     torch.Enabled = true;
                 }
             }
@@ -209,6 +222,11 @@ namespace Flashlight
             BatteryPercentageText.Text = string.Format("{0}%", battery.RemainingChargePercent.ToString());
 
             BatteryTimeText.Text = string.Format("{0]hrs {1}mins", battery.RemainingDischargeTime.TotalHours == 0.0 ? string.Empty : battery.RemainingDischargeTime.Hours.ToString(), battery.RemainingDischargeTime.Minutes.ToString());
+        }
+
+        private void LightIntensitySlider_ValueChanged(object sender, RangeBaseValueChangedEventArgs e)
+        {
+
         }
     }
 }

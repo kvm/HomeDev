@@ -8,7 +8,7 @@
     mc:Ignorable="d"
     Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
 
-    <Grid>
+    <Grid Background="Black">
         <Grid.RowDefinitions>
             <RowDefinition Height="1*"></RowDefinition>
             <RowDefinition Height="1*"></RowDefinition>
@@ -24,26 +24,32 @@
                 <ColumnDefinition Width="1*"></ColumnDefinition>
             </Grid.ColumnDefinitions>
 
-            <Grid Grid.Row="0" Grid.Column="0" Background="DarkOrchid">
-                <Slider Width="160" Height="60" VerticalAlignment="Center" HorizontalAlignment="Center" Value="8"></Slider>
+            <Grid Grid.Row="0" Grid.Column="0" Background="CornflowerBlue">
+                <TextBlock Text="Light Intensity" FontSize="22" Foreground="White" Margin="7, 7"></TextBlock>
+                <Slider x:Name="LightIntensitySlider" Width="160" Height="60" VerticalAlignment="Center" HorizontalAlignment="Center" Value="100" ValueChanged="LightIntensitySlider_ValueChanged"></Slider>
             </Grid>
-            
+
             <!--<Image x:Name="SosImageButton" Grid.Row="0" Grid.Column="0" Source="/Assets/Icons/sos.png" Tapped="SosImageButton_Tapped" Opacity="0.3" ></Image>-->
-            <Grid Grid.Row="0" Grid.Column="1" Background="DarkBlue">
+            <Grid Grid.Row="0" Grid.Column="1" Background="DarkSlateGray">
                 <Grid.RowDefinitions>
                     <RowDefinition Height="1*"></RowDefinition>
                     <RowDefinition Height="2*"></RowDefinition>
                     <RowDefinition Height="1*"></RowDefinition>
                 </Grid.RowDefinitions>
-                
+
                 <TextBlock Grid.Row="0" Text="Battery Status" Foreground="White" FontSize="20" Margin="7,7"></TextBlock>
                 <TextBlock x:Name="BatteryPercentageText" Grid.Row="1" Foreground="White" Text="70%" FontSize="56" Margin="7,7" FontWeight="Bold"></TextBlock>
                 <TextBlock x:Name="BatteryTimeText" Grid.Row="2" Foreground="White" Text="2Hrs 22Min left" FontSize="20" Margin="7,7"></TextBlock>
             </Grid>
 
-            <Grid Grid.Row="1" Grid.Column="0" Background="Brown"></Grid>
-            
-            <Grid Grid.Row="1" Grid.Column="1" Background="LimeGreen"></Grid>
+            <Grid Grid.Row="1" Grid.Column="0" Background="DarkSlateGray">
+                <TextBlock Text="Strobe Speed" FontSize="22"  Foreground="White" Margin="7,7"></TextBlock>
+                <Slider Width="160" Height="60" VerticalAlignment="Center" HorizontalAlignment="Center" Value="8"></Slider>
+            </Grid>
+
+            <Grid Grid.Row="1" Grid.Column="1" Background="CornflowerBlue">
+                <TextBlock Text="Compass" Foreground="White" FontSize="22" Margin="7,7"></TextBlock>
+            </Grid>
         </Grid>
     </Grid>
 </Page>
