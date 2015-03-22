@@ -22,6 +22,7 @@ using Windows.UI.Xaml.Media.Imaging;
 using Windows.Phone.Devices.Power;
 using Windows.Media.MediaProperties;
 using Windows.Storage;
+using Flashlight.Common;
 
 // The Blank Page item template is documented at http://go.microsoft.com/fwlink/?LinkId=391641
 
@@ -32,6 +33,24 @@ namespace Flashlight
     /// </summary>
     public sealed partial class MainPage : Page
     {
+        private readonly ObservableDictionary defaultViewModel = new ObservableDictionary();
+
+        public ObservableDictionary DefaultViewModel
+        {
+            get
+            {
+                return this.defaultViewModel;
+            }
+        }
+
+        private readonly NavigationHelper navigationHelper;
+
+        public NavigationHelper NavigationHelper
+        {
+            get { return navigationHelper; }
+        }
+        
+        
         public static MediaCapture captureManager;
 
         public static bool isCaptureMgrDisposed;
@@ -49,17 +68,40 @@ namespace Flashlight
 
                 this.NavigationCacheMode = NavigationCacheMode.Required;
 
+                this.navigationHelper = new NavigationHelper(this);
+                this.navigationHelper.LoadState += navigationHelper_LoadState;
+                this.navigationHelper.SaveState += navigationHelper_SaveState;
+
                 Application.Current.Resuming += Current_Resuming;
                 //this.Loaded += MainPage_Loaded;
 
                 battery.RemainingChargePercentChanged += Battery_RemainingChargePercentChanged;
 
                 UpdateBatteryWdiget();
+
+                // check if the torch intensity changer is enabled
+                var torch = captureManager.VideoDeviceController.TorchControl;
+
+                if(torch.PowerSupported)
+                {
+
+                }
+
             }
             catch(Exception)
             {
 
             }
+        }
+
+        void navigationHelper_SaveState(object sender, SaveStateEventArgs e)
+        {
+            // no implementation yet
+        }
+
+        void navigationHelper_LoadState(object sender, LoadStateEventArgs e)
+        {
+            this.defaultViewModel["Battery"] = new Models.Battery();
         }
 
         private void Battery_RemainingChargePercentChanged(object sender, object e)
@@ -110,6 +152,7 @@ namespace Flashlight
 
             //var dialog = new MessageDialog("Navigated called");
             //await dialog.ShowAsync();
+            this.navigationHelper.OnNavigatedTo(e);
         }
 
         private static async Task<DeviceInformation> GetCameraID(Windows.Devices.Enumeration.Panel desiredCamera)
@@ -121,42 +164,10 @@ namespace Flashlight
             else throw new Exception(string.Format("Camera of type {0} doesn't exist.", desiredCamera));
         }
 
-        private async void button_Tapped(object sender, TappedRoutedEventArgs e)
-        {
-            //Windows.Media.Capture.MediaCapture mediaCatpure = new MediaCapture();
-            //await mediaCatpure.InitializeAsync(new MediaCaptureInitializationSettings {
-            //});
-            ////mediaCatpure.VideoDeviceController.FlashControl. = true;
-            //mediaCatpure.VideoDeviceController.TorchControl.Enabled = true;
-
-            if (isCaptureMgrDisposed)
-            {
-                await Flashlight.App.InitialiseMediaCapture();
-                isCaptureMgrDisposed = false;
-            }
-
-            // then to turn on/off camera
-            var torch = captureManager.VideoDeviceController.TorchControl;
-            if (torch.Supported)
-            {
-                if(torch.Enabled)
-                {
-                    PowerImageButton.Source = new BitmapImage(new Uri(@"/Assets/Icons/power_off1.jpg", UriKind.Relative));
-                    torch.Enabled = false;
-                }
-                else
-                {
-                    PowerImageButton.Source = new BitmapImage(new Uri(@"/Assets/Icons/power_on1.jpg", UriKind.Relative));
-                    torch.Enabled = true;
-                }
-            }
-
-            //captureManager.Dispose();
-        }
-
         protected override void OnNavigatedFrom(NavigationEventArgs e)
         {
-            base.OnNavigatedFrom(e);
+            this.navigationHelper.OnNavigatedFrom(e);
+            //base.OnNavigatedFrom(e);
             captureManager.Dispose();
         }
 
@@ -188,7 +199,7 @@ namespace Flashlight
                     //await captureManager.StartRecordToStorageFileAsync(videoEncodingProperties, videoStorageFile);
                     
 
-                    torch.PowerPercent = 80.0f;
+                    //torch.PowerPercent = 80.0f;
                     torch.Enabled = true;
                 }
             }
