@@ -164,5 +164,20 @@ namespace Flashlight
         {
 
         }
+
+        private void SOSSwitch_Tapped(object sender, TappedRoutedEventArgs e)
+        {
+            var toggleButton = sender as ToggleButton;
+            var torch = this.DefaultViewModel["Torch"] as Models.Torch;
+
+            if(toggleButton.IsChecked == true)
+            {
+                torch.IsSOSTurnedOn = true;
+            }
+            else
+            {
+                torch.IsSOSTurnedOn = false;
+            }
+        }
     }
 }

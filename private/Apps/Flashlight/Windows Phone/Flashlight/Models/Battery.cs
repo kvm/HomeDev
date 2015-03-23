@@ -9,11 +9,11 @@ namespace Flashlight.Models
 {
     public class Battery: INotifyPropertyChanged
     {
-        private int remainingPercentage;
+        private string remainingPercentage;
 
-        public int RemainingPercentage
+        public string RemainingPercentage
         {
-            get { return remainingPercentage; }
+            get { return string.Concat(remainingPercentage, "%"); }
             set 
             { 
                 remainingPercentage = value;
@@ -50,7 +50,7 @@ namespace Flashlight.Models
         {
             var battery = Windows.Phone.Devices.Power.Battery.GetDefault();
 
-            RemainingPercentage = battery.RemainingChargePercent;
+            RemainingPercentage = battery.RemainingChargePercent.ToString();
 
             // TODO: Compute the remaining batter time based on factors like wifi, brightness
             //TimeLeft = GetFormattedTime(battery.RemainingDischargeTime);
@@ -62,13 +62,14 @@ namespace Flashlight.Models
 
         void battery_RemainingChargePercentChanged(object sender, object e)
         {
-            var battery = sender as Battery;
+            var battery = Windows.Phone.Devices.Power.Battery.GetDefault();
 
-            RemainingPercentage = battery.RemainingPercentage;
+            RemainingPercentage = battery.RemainingChargePercent.ToString();
 
-            TimeLeft = battery.TimeLeft;
+            // TODO: Compute the remaining batter time based on factors like wifi, brightness
+            //TimeLeft = battery.TimeLeft;
 
-            TextColor = GetTextColor(battery.RemainingPercentage);
+            TextColor = GetTextColor(battery.RemainingChargePercent);
         }
 
         public event PropertyChangedEventHandler PropertyChanged;

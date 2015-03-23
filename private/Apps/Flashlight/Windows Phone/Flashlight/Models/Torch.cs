@@ -20,9 +20,19 @@ namespace Flashlight.Models
             set { imageSource = value; NotifyPropertyChanged("ImageSource"); }
         }
 
+        private bool isSOSTurnedOn;
+
+        public bool IsSOSTurnedOn
+        {
+            get { return isSOSTurnedOn; }
+            set { isSOSTurnedOn = value; NotifyPropertyChanged("IsSOSTurnedOn"); }
+        }
+        
+
         public Torch()
         {
             this.ImageSource = @"ms-appx:/Assets/Icons/power_off3.png";
+            this.IsSOSTurnedOn = false;
         }
 
         private void NotifyPropertyChanged(string propertyName)

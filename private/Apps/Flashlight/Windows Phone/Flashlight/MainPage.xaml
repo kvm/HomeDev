@@ -8,9 +8,14 @@
     DataContext="{Binding DefaultViewModel, RelativeSource={RelativeSource Mode=Self}}"
     mc:Ignorable="d"
     Background="{ThemeResource ApplicationPageBackgroundThemeBrush}"
+    xmlns:local1="using:Flashlight.Converters"
     xmlns:local2="using:Flashlight.UserControls"
     xmlns:i="http://schemas.microsoft.com/expression/blend/2008" >
 
+    <Page.Resources>
+        <local1:BooleanToVisibilityConverter x:Key="booleanToVisibilityConverter"/>
+    </Page.Resources>
+    
     <Grid Background="Black">
         <Grid.RowDefinitions>
             <RowDefinition Height="1*"></RowDefinition>
@@ -19,7 +24,7 @@
 
         <Image DataContext="{Binding Torch}" Grid.Row="0" x:Name="PowerImageButton" Source="{Binding ImageSource}" Stretch="Fill" HorizontalAlignment="Center" Height="300" Margin="0,10,0,0" VerticalAlignment="Top" Width="300" Tapped="PowerImageButton_Tapped">
         </Image>
-        
+
         <Grid Grid.Row="1" Height="auto">
             <Grid.RowDefinitions>
                 <RowDefinition Height="1*"></RowDefinition>
@@ -37,19 +42,22 @@
             <!--<Image x:Name="SosImageButton" Grid.Row="0" Grid.Column="0" Source="/Assets/Icons/sos.png" Tapped="SosImageButton_Tapped" Opacity="0.3" ></Image>-->
             <Grid DataContext="{Binding Battery}" Grid.Row="0" Grid.Column="1" Background="DarkSlateGray">
                 <Grid.RowDefinitions>
-                    <RowDefinition Height="1*"></RowDefinition>
-                    <RowDefinition Height="2*"></RowDefinition>
+                    <RowDefinition Height="1.5*"></RowDefinition>
+                    <RowDefinition Height="3*"></RowDefinition>
                     <RowDefinition Height="1*"></RowDefinition>
                 </Grid.RowDefinitions>
 
                 <TextBlock Grid.Row="0" Text="Battery Status" Foreground="White" FontSize="24" Margin="10,7"></TextBlock>
-                <TextBlock x:Name="BatteryPercentageText" Grid.Row="1" Foreground="{Binding TextColor}" Text="{Binding RemainingPercentage}" FontSize="56" Margin="15,15" FontWeight="Bold"></TextBlock>
+                <TextBlock x:Name="BatteryPercentageText" Grid.Row="1" Foreground="{Binding TextColor}" Text="{Binding RemainingPercentage}" FontSize="56" Margin="15,6" FontWeight="Bold"></TextBlock>
                 <TextBlock x:Name="BatteryTimeText" Grid.Row="2" Foreground="White" Text="{Binding TimeLeft}" FontSize="20" Margin="7,7"></TextBlock>
             </Grid>
 
             <Grid Grid.Row="1" Grid.Column="0" Background="DarkSlateGray">
-                <TextBlock Text="Strobe Speed" FontSize="22"  Foreground="White" Margin="7,7"></TextBlock>
-                <Slider Width="160" Height="60" VerticalAlignment="Center" HorizontalAlignment="Center" Value="8"></Slider>
+                <StackPanel DataContext="{Binding Torch}">
+                    <ToggleButton x:Name="SOSSwitch" Content="SOS" HorizontalAlignment="Left" Margin="31,10,0,0" VerticalAlignment="Top" Tapped="SOSSwitch_Tapped"/>
+                    <TextBlock Text="Strobe Speed" FontSize="22"  Foreground="White" Margin="7,7" Visibility="{Binding IsSOSTurnedOn, Converter= {StaticResource booleanToVisibilityConverter}}"></TextBlock>
+                    <Slider Width="160" Height="60" VerticalAlignment="Center" HorizontalAlignment="Center" Value="8" Visibility="{Binding IsSOSTurnedOn, Converter= {StaticResource booleanToVisibilityConverter}}"></Slider>
+                </StackPanel>
             </Grid>
 
             <Grid Grid.Row="1" Grid.Column="1" Background="CornflowerBlue">
