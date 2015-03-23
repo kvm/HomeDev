@@ -95,6 +95,7 @@
     </Compile>
     <Compile Include="Managers\ExceptionHandler.cs" />
     <Compile Include="Models\Battery.cs" />
+    <Compile Include="Models\Torch.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="TestPage.xaml.cs">
       <DependentUpon>TestPage.xaml</DependentUpon>

@@ -63,7 +63,6 @@ namespace Flashlight
             {
                 //var dialog = new MessageDialog("Constructor called");
                 //dialog.ShowAsync();
-                var battery = Battery.GetDefault();
                 this.InitializeComponent();
 
                 this.NavigationCacheMode = NavigationCacheMode.Required;
@@ -73,19 +72,6 @@ namespace Flashlight
                 this.navigationHelper.SaveState += navigationHelper_SaveState;
 
                 Application.Current.Resuming += Current_Resuming;
-                //this.Loaded += MainPage_Loaded;
-
-                battery.RemainingChargePercentChanged += Battery_RemainingChargePercentChanged;
-
-                UpdateBatteryWdiget();
-
-                // check if the torch intensity changer is enabled
-                var torch = captureManager.VideoDeviceController.TorchControl;
-
-                if(torch.PowerSupported)
-                {
-
-                }
 
             }
             catch(Exception)
@@ -96,44 +82,51 @@ namespace Flashlight
 
         void navigationHelper_SaveState(object sender, SaveStateEventArgs e)
         {
+            DisposeViewModel();
+        }
+
+        public async void navigationHelper_LoadState(object sender, LoadStateEventArgs e)
+        {
+            await InitialiseViewModel();
+        }
+
+        public async Task InitialiseViewModel()
+        {
+            this.DefaultViewModel["Battery"] = new Models.Battery();
+
+            var torch = new Models.Torch();
+
+            this.DefaultViewModel["Torch"] = torch;
+
+            await torch.InitialiseCaptureManager();
+        }
+
+        public void DisposeViewModel()
+        {
             // no implementation yet
+            var torch = this.DefaultViewModel["Torch"] as Models.Torch;
+
+            torch.DisposeCaptureManager();
         }
 
-        void navigationHelper_LoadState(object sender, LoadStateEventArgs e)
+        private async void Current_Resuming(object sender, object e)
         {
-            this.defaultViewModel["Battery"] = new Models.Battery();
-        }
-
-        private void Battery_RemainingChargePercentChanged(object sender, object e)
-        {
-            UpdateBatteryWdiget();
-        }
-
-        private void Current_Resuming(object sender, object e)
-        {
-            TurnOffPowerButtonImage();
-            UpdateBatteryWdiget();
+            try
+            {
+                DisposeViewModel();
+                await InitialiseViewModel();
+            }
+            catch(Exception ex)
+            {
+                var dialog = new MessageDialog(ex.Message + ex.StackTrace);
+                dialog.ShowAsync();
+            }
         }
 
         protected override void OnLostFocus(RoutedEventArgs e)
         {
             base.OnLostFocus(e);
         }
-
-        private async void MainPage_Loaded(object sender, RoutedEventArgs e)
-        {
-            var cameraID = await GetCameraID(Windows.Devices.Enumeration.Panel.Back);
-            captureManager = new MediaCapture();
-
-            await captureManager.InitializeAsync(new MediaCaptureInitializationSettings
-            {
-                StreamingCaptureMode = StreamingCaptureMode.Video,
-                PhotoCaptureSource = PhotoCaptureSource.VideoPreview,
-                AudioDeviceId = string.Empty,
-                VideoDeviceId = cameraID.Id
-            });
-        }
-
 
         /// <summary>
         /// Invoked when this page is about to be displayed in a Frame.
@@ -155,84 +148,16 @@ namespace Flashlight
             this.navigationHelper.OnNavigatedTo(e);
         }
 
-        private static async Task<DeviceInformation> GetCameraID(Windows.Devices.Enumeration.Panel desiredCamera)
-        {
-            DeviceInformation deviceID = (await DeviceInformation.FindAllAsync(DeviceClass.VideoCapture))
-                .FirstOrDefault(x => x.EnclosureLocation != null && x.EnclosureLocation.Panel == desiredCamera);
-
-            if (deviceID != null) return deviceID;
-            else throw new Exception(string.Format("Camera of type {0} doesn't exist.", desiredCamera));
-        }
-
         protected override void OnNavigatedFrom(NavigationEventArgs e)
         {
             this.navigationHelper.OnNavigatedFrom(e);
-            //base.OnNavigatedFrom(e);
-            captureManager.Dispose();
         }
 
-        private async void PowerImageButton_Tapped(object sender, TappedRoutedEventArgs e)
+        private void PowerImageButton_Tapped(object sender, TappedRoutedEventArgs e)
         {
-            if (isCaptureMgrDisposed)
-            {
-                await Flashlight.App.InitialiseMediaCapture();
-                isCaptureMgrDisposed = false;
-            }
-
-            // then to turn on/off camera
-            var torch = captureManager.VideoDeviceController.TorchControl;
-            if (torch.Supported)
-            {
-                if (torch.Enabled)
-                {
-                    TurnOffPowerButtonImage();
-                    torch.Enabled = false;
-                }
-                else
-                {
-                    TurnOnPowerButtonImage();
-
-                    //var videoEncodingProperties = MediaEncodingProfile.CreateMp4(VideoEncodingQuality.Vga);
-
-                    //// Start Video Recording
-                    //var videoStorageFile = await KnownFolders.VideosLibrary.CreateFileAsync("tempVideo.mp4", CreationCollisionOption.GenerateUniqueName);
-                    //await captureManager.StartRecordToStorageFileAsync(videoEncodingProperties, videoStorageFile);
-                    
-
-                    //torch.PowerPercent = 80.0f;
-                    torch.Enabled = true;
-                }
-            }
-        }
-
-        private void TurnOnPowerButtonImage()
-        {
-            PowerImageButton.Source = new BitmapImage(new Uri(@"ms-appx:/Assets/Icons/power_on3.png", UriKind.Absolute));
-        }
-
-        private void TurnOffPowerButtonImage()
-        {
-            PowerImageButton.Source = new BitmapImage(new Uri(@"ms-appx:/Assets/Icons/power_off3.png", UriKind.Absolute));
-        }
-
-        //private async void SosImageButton_Tapped(object sender, TappedRoutedEventArgs e)
-        //{
-        //    if (isCaptureMgrDisposed)
-        //    {
-        //        await Flashlight.App.InitialiseMediaCapture();
-        //        isCaptureMgrDisposed = false;
-        //    }
-
-        //    SosImageButton.Opacity = 1.0;
-        //}
-
-        private void UpdateBatteryWdiget()
-        {
-            var battery = Battery.GetDefault();
-
-            BatteryPercentageText.Text = string.Format("{0}%", battery.RemainingChargePercent.ToString());
-
-            BatteryTimeText.Text = string.Format("{0]hrs {1}mins", battery.RemainingDischargeTime.TotalHours == 0.0 ? string.Empty : battery.RemainingDischargeTime.Hours.ToString(), battery.RemainingDischargeTime.Minutes.ToString());
+            //TODO: Move this to commands
+            var torch = this.DefaultViewModel["Torch"] as Models.Torch;
+            torch.PowerButtonTapped();
         }
 
         private void LightIntensitySlider_ValueChanged(object sender, RangeBaseValueChangedEventArgs e)

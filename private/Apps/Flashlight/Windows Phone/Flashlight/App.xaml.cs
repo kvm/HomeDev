@@ -1,4 +1,5 @@
-﻿using Flashlight.Managers;
+﻿using Flashlight.Common;
+using Flashlight.Managers;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -40,24 +41,6 @@ namespace Flashlight
         {
             this.InitializeComponent();
             this.Suspending += this.OnSuspending;
-
-            // ensure general app exceptions are handled
-            UnhandledException += App_UnhandledException;
-        }
-
-        protected async override void OnActivated(IActivatedEventArgs args)
-        {
-            //var dialog = new MessageDialog("On Activated called");
-            //await dialog.ShowAsync();
-
-            base.OnActivated(args);
-            InitialiseMediaCapture();
-        }
-
-        void App_UnhandledException(object sender, UnhandledExceptionEventArgs e)
-        {
-            e.Handled = true;
-            ExceptionHandler.HandleException(new Exception(e.Message, e.Exception));
         }
 
         /// <summary>
@@ -66,11 +49,8 @@ namespace Flashlight
         /// search results, and so forth.
         /// </summary>
         /// <param name="e">Details about the launch request and process.</param>
-        protected async override void OnLaunched(LaunchActivatedEventArgs e)
+        protected override async void OnLaunched(LaunchActivatedEventArgs e)
         {
-            //var dialog = new MessageDialog("On launched called");
-            //await dialog.ShowAsync();
-
 #if DEBUG
             if (System.Diagnostics.Debugger.IsAttached)
             {
@@ -81,24 +61,33 @@ namespace Flashlight
             Frame rootFrame = Window.Current.Content as Frame;
 
             // Do not repeat app initialization when the Window already has content,
-            // just ensure that the window is active
+            // just ensure that the window is active.
             if (rootFrame == null)
             {
-                // Create a Frame to act as the navigation context and navigate to the first page
+                // Create a Frame to act as the navigation context and navigate to the first page.
                 rootFrame = new Frame();
 
-                // TODO: change this value to a cache size that is appropriate for your application
-                rootFrame.CacheSize = 1;
+                // Associate the frame with a SuspensionManager key.
+                SuspensionManager.RegisterFrame(rootFrame, "AppFrame");
 
-                // Set the default language
-                rootFrame.Language = Windows.Globalization.ApplicationLanguages.Languages[0];
+                // TODO: Change this value to a cache size that is appropriate for your application.
+                rootFrame.CacheSize = 1;
 
                 if (e.PreviousExecutionState == ApplicationExecutionState.Terminated)
                 {
-                    // TODO: Load state from previously suspended application
+                    // Restore the saved session state only when appropriate.
+                    try
+                    {
+                        await SuspensionManager.RestoreAsync();
+                    }
+                    catch (SuspensionManagerException)
+                    {
+                        // Something went wrong restoring state.
+                        // Assume there is no state and continue.
+                    }
                 }
 
-                // Place the frame in the current Window
+                // Place the frame in the current Window.
                 Window.Current.Content = rootFrame;
             }
 
@@ -119,24 +108,20 @@ namespace Flashlight
 
                 // When the navigation stack isn't restored navigate to the first page,
                 // configuring the new page by passing required information as a navigation
-                // parameter
+                // parameter.
                 if (!rootFrame.Navigate(typeof(MainPage), e.Arguments))
                 {
                     throw new Exception("Failed to create initial page");
                 }
             }
 
-            // Ensure the current window is active
+            // Ensure the current window is active.
             Window.Current.Activate();
-
-            InitialiseMediaCapture();
         }
 
         /// <summary>
         /// Restores the content transitions after the app has launched.
         /// </summary>
-        /// <param name="sender">The object where the handler is attached.</param>
-        /// <param name="e">Details about the navigation event.</param>
         private void RootFrame_FirstNavigated(object sender, NavigationEventArgs e)
         {
             var rootFrame = sender as Frame;
@@ -153,38 +138,9 @@ namespace Flashlight
         /// <param name="e">Details about the suspend request.</param>
         private async void OnSuspending(object sender, SuspendingEventArgs e)
         {
-            //var dialog = new MessageDialog("On Suspending called");
-            //await dialog.ShowAsync();
-
-            //var deferral = e.SuspendingOperation.GetDeferral();
-            MainPage.captureManager.Dispose();
-            MainPage.isCaptureMgrDisposed = true;
-            // TODO: Save application state and stop any background activity
-            //deferral.Complete();
-        }
-
-        public static async Task InitialiseMediaCapture()
-        {
-            var cameraID = await GetCameraID(Windows.Devices.Enumeration.Panel.Back);
-
-            MainPage.captureManager = new MediaCapture();
-
-            await MainPage.captureManager.InitializeAsync(new MediaCaptureInitializationSettings
-            {
-                StreamingCaptureMode = StreamingCaptureMode.Video,
-                PhotoCaptureSource = PhotoCaptureSource.VideoPreview,
-                AudioDeviceId = string.Empty,
-                VideoDeviceId = cameraID.Id
-            });
-        }
-
-        private static async Task<DeviceInformation> GetCameraID(Windows.Devices.Enumeration.Panel desiredCamera)
-        {
-            DeviceInformation deviceID = (await DeviceInformation.FindAllAsync(DeviceClass.VideoCapture))
-                .FirstOrDefault(x => x.EnclosureLocation != null && x.EnclosureLocation.Panel == desiredCamera);
-
-            if (deviceID != null) return deviceID;
-            else throw new Exception(string.Format("Camera of type {0} doesn't exist.", desiredCamera));
+            var deferral = e.SuspendingOperation.GetDeferral();
+            await SuspensionManager.SaveAsync();
+            deferral.Complete();
         }
     }
 }
