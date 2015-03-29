@@ -54,15 +54,15 @@
 
             <Grid Grid.Row="1" Grid.Column="0" Background="DarkSlateGray">
                 <StackPanel DataContext="{Binding Torch}">
-                    <ToggleButton x:Name="SOSSwitch" Content="SOS" HorizontalAlignment="Left" Margin="31,10,0,0" VerticalAlignment="Top" Tapped="SOSSwitch_Tapped"/>
-                    <TextBlock Text="Strobe Speed" FontSize="22"  Foreground="White" Margin="7,7" Visibility="{Binding IsSOSTurnedOn, Converter= {StaticResource booleanToVisibilityConverter}}"></TextBlock>
-                    <Slider Width="160" Height="60" VerticalAlignment="Center" HorizontalAlignment="Center" Value="8" Visibility="{Binding IsSOSTurnedOn, Converter= {StaticResource booleanToVisibilityConverter}}"></Slider>
+                    <ToggleButton x:Name="SOSSwitch" Background="White" Foreground="Black" Content="SOS" HorizontalAlignment="Center" Margin="0,10,0,0" VerticalAlignment="Top" Tapped="SOSSwitch_Tapped" IsChecked="{Binding IsSOSTurnedOn}" ClickMode="Press"/>
+                    <TextBlock Text="Strobe Speed" FontSize="18"  Foreground="White" Margin="18,20,18,0"/>
+                    <Slider x:Name="StrobeSlider" Width="160" Height="30" VerticalAlignment="Center" HorizontalAlignment="Center" Value="75" ValueChanged="StrobeSlider_ValueChanged"></Slider>
                 </StackPanel>
             </Grid>
 
             <Grid Grid.Row="1" Grid.Column="1" Background="CornflowerBlue">
                 <!--<TextBlock Text="Compass" Foreground="White" FontSize="22" Margin="7,7"></TextBlock>-->
-                <local2:CompassControl Style="{StaticResource NeedleCompassTemplate}" Margin="10"/>
+                <local2:CompassControl Style="{StaticResource NeedleCompassTemplate}" Margin="10" IsDoubleTapEnabled="False"/>
             </Grid>
         </Grid>
     </Grid>

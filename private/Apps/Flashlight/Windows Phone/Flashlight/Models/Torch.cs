@@ -1,12 +1,15 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Input;
 using Windows.Devices.Enumeration;
 using Windows.Media.Capture;
+using Windows.UI.Core;
+using Windows.UI.Xaml;
 
 namespace Flashlight.Models
 {
@@ -17,7 +20,14 @@ namespace Flashlight.Models
         public string ImageSource
         {
             get { return imageSource; }
-            set { imageSource = value; NotifyPropertyChanged("ImageSource"); }
+            set
+            {
+                if (imageSource != value)
+                {
+                    imageSource = value;
+                    NotifyPropertyChanged("ImageSource");
+                }
+            }
         }
 
         private bool isSOSTurnedOn;
@@ -27,12 +37,18 @@ namespace Flashlight.Models
             get { return isSOSTurnedOn; }
             set { isSOSTurnedOn = value; NotifyPropertyChanged("IsSOSTurnedOn"); }
         }
-        
+
+        private DispatcherTimer dispatcherTimer;
+
+        private int SOSOnTimeInMilliseconds;
+
+        private int SOSOffTimeInMilliseconds;
 
         public Torch()
         {
             this.ImageSource = @"ms-appx:/Assets/Icons/power_off3.png";
             this.IsSOSTurnedOn = false;
+            this.dispatcherTimer = new DispatcherTimer();
         }
 
         private void NotifyPropertyChanged(string propertyName)
@@ -82,20 +98,13 @@ namespace Flashlight.Models
                 {
                     TurnOffPowerButtonImage();
                     torch.Enabled = false;
+                    SOSTurnedOff();
                 }
                 else
                 {
                     TurnOnPowerButtonImage();
-
-                    //var videoEncodingProperties = MediaEncodingProfile.CreateMp4(VideoEncodingQuality.Vga);
-
-                    //// Start Video Recording
-                    //var videoStorageFile = await KnownFolders.VideosLibrary.CreateFileAsync("tempVideo.mp4", CreationCollisionOption.GenerateUniqueName);
-                    //await captureManager.StartRecordToStorageFileAsync(videoEncodingProperties, videoStorageFile);
-
-
-                    //torch.PowerPercent = 80.0f;
                     torch.Enabled = true;
+                    SOSTurnedOff();
                 }
             }
         }
@@ -122,6 +131,85 @@ namespace Flashlight.Models
         public void Execute(object parameter)
         {
             PowerButtonTapped();
+        }
+
+        public void SOSTurnedOn(int sliderValue)
+        {
+            this.IsSOSTurnedOn = true;
+            sliderValue = 100 - sliderValue;
+
+            this.SOSOnTimeInMilliseconds = ((sliderValue / 35) + 1) * 500 + 250;
+            this.SOSOffTimeInMilliseconds = ((sliderValue / 35) + 1) * 500 + 250;
+
+            dispatcherTimer = new DispatcherTimer();
+            dispatcherTimer.Tick += new EventHandler<object>(dispatcherTimer_Tick);
+            dispatcherTimer.Interval = new TimeSpan(0, 0, 0, 0, this.SOSOnTimeInMilliseconds);
+            dispatcherTimer.Start();
+
+            var torch = captureManager.VideoDeviceController.TorchControl;
+            if (torch.Supported)
+            {
+                torch.Enabled = true;
+                TurnOnPowerButtonImage();
+            }
+        }
+
+        private void dispatcherTimer_Tick(object sender, object e)
+        {
+            if(this.SOSOffTimeInMilliseconds >= 750)
+            {
+                var torch = captureManager.VideoDeviceController.TorchControl;
+                if (torch.Supported)
+                {
+                    if(torch.Enabled)
+                    {
+                        torch.Enabled = false;
+                    }
+                    else
+                    {
+                        torch.Enabled = true;
+                    }
+                }
+            }
+        }
+
+        public void SOSTurnedOff()
+        {
+            dispatcherTimer.Stop();
+            
+            this.IsSOSTurnedOn = false;
+
+            var torch = captureManager.VideoDeviceController.TorchControl;
+            if (torch.Supported)
+            {
+                torch.Enabled = false;
+                TurnOffPowerButtonImage();
+            }
+        }
+
+        public void TurnOnTorch()
+        {
+            TurnOnPowerButtonImage();
+            var torch = captureManager.VideoDeviceController.TorchControl;
+            if (torch.Supported)
+            {
+                torch.Enabled = true;
+            }
+        }
+
+        public void TurnOffTorch()
+        {
+            TurnOffPowerButtonImage();
+            var torch = captureManager.VideoDeviceController.TorchControl;
+            if (torch.Supported)
+            {
+                torch.Enabled = false;
+            }
+
+            if (this.IsSOSTurnedOn)
+            {
+                this.SOSTurnedOff();
+            }
         }
     }
 }

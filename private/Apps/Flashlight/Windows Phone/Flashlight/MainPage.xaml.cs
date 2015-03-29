@@ -49,8 +49,8 @@ namespace Flashlight
         {
             get { return navigationHelper; }
         }
-        
-        
+
+
         public static MediaCapture captureManager;
 
         public static bool isCaptureMgrDisposed;
@@ -74,7 +74,7 @@ namespace Flashlight
                 Application.Current.Resuming += Current_Resuming;
 
             }
-            catch(Exception)
+            catch (Exception)
             {
 
             }
@@ -116,7 +116,7 @@ namespace Flashlight
                 DisposeViewModel();
                 await InitialiseViewModel();
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
                 var dialog = new MessageDialog(ex.Message + ex.StackTrace);
                 dialog.ShowAsync();
@@ -168,16 +168,28 @@ namespace Flashlight
         private void SOSSwitch_Tapped(object sender, TappedRoutedEventArgs e)
         {
             var toggleButton = sender as ToggleButton;
+
             var torch = this.DefaultViewModel["Torch"] as Models.Torch;
 
-            if(toggleButton.IsChecked == true)
+            if (toggleButton.IsChecked == true)
             {
-                torch.IsSOSTurnedOn = true;
+                torch.SOSTurnedOn((int)StrobeSlider.Value);
             }
             else
             {
-                torch.IsSOSTurnedOn = false;
+                torch.SOSTurnedOff();
+            }
+        }
+
+        private void StrobeSlider_ValueChanged(object sender, RangeBaseValueChangedEventArgs e)
+        {
+            if (this.DefaultViewModel.ContainsKey("Torch"))
+            {
+                var torch = this.DefaultViewModel["Torch"] as Models.Torch;
+                torch.SOSTurnedOff();
+                torch.SOSTurnedOn((int)StrobeSlider.Value);
             }
         }
     }
+
 }
